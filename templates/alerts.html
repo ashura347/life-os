@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}LIFE OS — Alert History & Management{% endblock %}
+{% block page_title %}Emergency Alert Management{% endblock %}
+
+{% block content %}
+<div class="alerts-page-container">
+
+    {% if error %}
+    <div class="error-alert">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>{{ error }}</span>
+        <a href="{{ url_for('patient_bp.list_patients') }}" class="btn-sm btn-outline ml-auto">Go to Patient Management</a>
+    </div>
+    {% else %}
+
+    <!-- Patient Banner Card -->
+    <div class="patient-banner-card">
+        <div class="banner-avatar">
+            <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+        </div>
+        <div class="banner-details">
+            <div class="banner-title-row">
+                <h2>{{ patient.name }}</h2>
+                <span class="tag-badge"><i class="fa-solid fa-id-card"></i> {{ patient.patient_id }}</span>
+                <span class="badge status-badge status-{{ patient_status|lower }}" id="patient-system-badge">
+                    SYSTEM STATUS: {{ patient_status }}
+                </span>
+            </div>
+            <p class="banner-sub">
+                <i class="fa-solid fa-shield-halved"></i> Active Alerts: <strong id="active-alert-count">{{ active_alerts|length }}</strong>
+            </p>
+        </div>
+        <div class="banner-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </a>
+            <a href="{{ url_for('vital_bp.view_vital_history', patient_id=patient.patient_id) }}" class="btn btn-outline">
+                <i class="fa-solid fa-heart-pulse"></i> Vitals Log
+            </a>
+        </div>
+    </div>
+
+    <!-- Software Disclaimer Box -->
+    <div class="device-disclaimer-box mb-4">
+        <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+        <span><strong>Software Alert Engine Notice:</strong> Generated alerts represent rule-based prototype threshold evaluations. They do not constitute clinically validated medical diagnostics or emergency hospital dispatch.</span>
+    </div>
+
+    <!-- Active Alerts Card -->
+    {% if active_alerts %}
+    <div class="card active-alerts-card mb-4">
+        <div class="card-header bg-amber-light">
+            <h3><i class="fa-solid fa-bell text-amber"></i> Un-Resolved Active Alerts</h3>
+            <span class="badge-sm badge-sim">Requires Attention</span>
+        </div>
+        <div class="card-body">
+            <div class="active-alerts-list">
+                {% for alert in active_alerts %}
+                <div class="alert-item-box severity-{{ alert.severity|lower }}" id="alert-card-{{ alert.id }}">
+                    <div class="alert-item-header">
+                        <span class="badge status-badge status-{{ alert.severity|lower }}">
+                            <i class="fa-solid fa-triangle-exclamation"></i> {{ alert.severity }}
+                        </span>
+                        <span class="alert-type-tag">{{ alert.alert_type }}</span>
+                        <span class="alert-time-tag"><i class="fa-regular fa-clock"></i> {{ alert.triggered_at }}</span>
+                    </div>
+                    <p class="alert-message-text">{{ alert.message }}</p>
+                    <div class="alert-item-actions">
+                        {% if alert.status == 'ACTIVE' %}
+                        <button class="btn btn-sm btn-outline btn-ack" onclick="acknowledgeAlert({{ alert.id }})">
+                            <i class="fa-solid fa-eye"></i> Acknowledge
+                        </button>
+                        {% else %}
+                        <span class="badge-sm pill-sm text-green"><i class="fa-solid fa-check"></i> Acknowledged</span>
+                        {% endif %}
+
+                        <button class="btn btn-sm btn-primary btn-resolve" onclick="resolveAlert({{ alert.id }})">
+                            <i class="fa-solid fa-check-double"></i> Resolve Alert
+                        </button>
+
+                        <button class="btn btn-sm btn-danger btn-emergency" onclick="triggerEmergencyWorkflow({{ alert.id }})">
+                            <i class="fa-solid fa-truck-medical"></i> Initiate Emergency (TEST)
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Alert History Table Card -->
+    <div class="card history-table-card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-list-check"></i> Complete Alert History Log</h3>
+            <span class="count-badge">{{ history|length }} Total Records</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Alert ID</th>
+                            <th>Triggered Time</th>
+                            <th>Alert Type</th>
+                            <th>Severity</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alert-table-body">
+                        {% for record in history %}
+                        <tr id="table-row-alert-{{ record.id }}">
+                            <td><strong>#{{ record.id }}</strong></td>
+                            <td><i class="fa-regular fa-clock text-muted"></i> {{ record.triggered_at }}</td>
+                            <td><span class="pill-sm">{{ record.alert_type }}</span></td>
+                            <td>
+                                <span class="badge status-badge status-{{ record.severity|lower }}">
+                                    {{ record.severity }}
+                                </span>
+                            </td>
+                            <td class="alert-msg-cell">{{ record.message }}</td>
+                            <td>
+                                <span class="badge-sm status-pill-{{ record.status|lower }}" id="row-status-{{ record.id }}">
+                                    {{ record.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons" id="row-actions-{{ record.id }}">
+                                    {% if record.status == 'ACTIVE' %}
+                                    <button class="btn-sm btn-outline" onclick="acknowledgeAlert({{ record.id }})">
+                                        Ack
+                                    </button>
+                                    <button class="btn-sm btn-primary" onclick="resolveAlert({{ record.id }})">
+                                        Resolve
+                                    </button>
+                                    {% elif record.status == 'ACKNOWLEDGED' %}
+                                    <button class="btn-sm btn-primary" onclick="resolveAlert({{ record.id }})">
+                                        Resolve
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted"><i class="fa-solid fa-check-double text-green"></i> Done</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">No alert history records found for this patient.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function acknowledgeAlert(alertId) {
+    try {
+        const response = await fetch(`/api/alerts/${alertId}/acknowledge`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Error acknowledging alert');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+
+async function resolveAlert(alertId) {
+    try {
+        const response = await fetch(`/api/alerts/${alertId}/resolve`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Error resolving alert');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+    }
+}
+</script>
+{% endblock %}

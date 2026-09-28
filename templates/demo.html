@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}LIFE OS — Demo Mode Control Room{% endblock %}
+{% block page_title %}Interactive Demo Control Room{% endblock %}
+
+{% block content %}
+<div class="demo-container">
+
+    <!-- Prominent Demo Mode Safety Alert Banner -->
+    <div class="sim-alert-banner demo-banner-alert">
+        <i class="fa-solid fa-flask-vial text-amber" style="font-size: 1.8rem;"></i>
+        <div>
+            <h3 style="margin: 0; font-size: 1.1rem; color: #92400e;">DEMO / TEST MODE ACTIVE</h3>
+            <p style="margin: 0.2rem 0 0 0; font-size: 0.88rem;">
+                This environment is operating in <strong>STUDENT PROTOTYPE TEST MODE</strong>. All vital simulations, alert escalations, and emergency response workflows are purely software demonstrations. <strong>Zero real SMS, phone calls, or hospital dispatches are made.</strong>
+            </p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <!-- Column 1: Interactive Scenario Buttons -->
+        <div class="grid-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-sliders"></i> Simulation Scenario Controls</h3>
+                <span class="badge-sm badge-sim">Patient P001</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3" style="font-size: 0.88rem;">Select a pre-configured simulation scenario to demonstrate end-to-end LIFE OS capabilities:</p>
+
+                <div class="btn-group-stacked">
+                    <button class="btn btn-outline-success btn-block text-left" onclick="triggerDemoScenario('normal')">
+                        <i class="fa-solid fa-circle-check text-green"></i>
+                        <strong>1. Normal Condition</strong>
+                        <div class="subtext">Simulates normal vitals (75 BPM, 98% SpO2, 36.8°C). Status remains NORMAL.</div>
+                    </button>
+
+                    <button class="btn btn-outline-warning btn-block text-left" onclick="triggerDemoScenario('warning')">
+                        <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+                        <strong>2. Warning Condition</strong>
+                        <div class="subtext">Simulates elevated vitals (108 BPM, 94% SpO2, 37.9°C).</div>
+                    </button>
+
+                    <button class="btn btn-outline-danger btn-block text-left" onclick="triggerDemoScenario('critical')">
+                        <i class="fa-solid fa-radiation text-red"></i>
+                        <strong>3. Critical Condition</strong>
+                        <div class="subtext">Simulates 2 consecutive critical vitals (125 BPM, 91% SpO2). Triggers Rule Engine Alert.</div>
+                    </button>
+
+                    <button class="btn btn-danger btn-block text-left" onclick="triggerDemoScenario('emergency')">
+                        <i class="fa-solid fa-truck-medical"></i>
+                        <strong>4. Emergency Response Event</strong>
+                        <div class="subtext">Escalates critical alert, searches Pune hospitals, logs TEST notification.</div>
+                    </button>
+
+                    <button class="btn btn-outline-primary btn-block text-left" onclick="triggerDemoScenario('reset')">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <strong>5. Reset Demo State</strong>
+                        <div class="subtext">Resolves active alerts & events, resetting patient status back to NORMAL.</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: System Health Diagnostics & Real-Time Output -->
+        <div class="grid-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-heart-pulse"></i> Real-Time Simulation Feedback</h3>
+                <span class="badge status-badge status-{{ health.overall_system }}">{{ health.overall_system | upper }}</span>
+            </div>
+            <div class="card-body">
+                <div class="health-diagnostics-grid mb-3">
+                    <div class="diag-item">
+                        <span class="diag-lbl">Database:</span>
+                        <span class="badge-sm pill-sm text-green">{{ health.database }}</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-lbl">Alert Engine:</span>
+                        <span class="badge-sm pill-sm text-green">{{ health.alert_engine }}</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-lbl">ML Model:</span>
+                        <span class="badge-sm pill-sm text-blue">{{ health.ml_model }}</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-lbl">Hospital Lookup:</span>
+                        <span class="badge-sm pill-sm text-amber">{{ health.hospital_service }}</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-lbl">Notification Mode:</span>
+                        <span class="badge-sm pill-sm text-purple">{{ health.notification_mode }}</span>
+                    </div>
+                </div>
+
+                <div class="output-console-box">
+                    <div class="console-header">
+                        <i class="fa-solid fa-terminal"></i> Simulation Execution Log
+                    </div>
+                    <pre class="console-body" id="demo-console-output">// Click a scenario button to initiate test simulation...</pre>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function triggerDemoScenario(scenarioType) {
+    const consoleOutput = document.getElementById('demo-console-output');
+    consoleOutput.textContent = `// Executing scenario '${scenarioType}'... Please wait.`;
+
+    fetch('/api/demo/scenario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario: scenarioType, patient_id: 'P001' })
+    })
+    .then(res => res.json())
+    .then(data => {
+        consoleOutput.textContent = JSON.stringify(data, null, 2);
+    })
+    .catch(err => {
+        consoleOutput.textContent = `// Error executing scenario: ${err}`;
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}LIFE OS — Vital Records History{% endblock %}
+{% block page_title %}Vital Records History{% endblock %}
+
+{% block content %}
+<div class="vitals-history-container">
+
+    {% if error %}
+    <div class="error-alert">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>{{ error }}</span>
+        <a href="{{ url_for('patient_bp.list_patients') }}" class="btn-sm btn-outline ml-auto">Go to Patient Management</a>
+    </div>
+    {% else %}
+
+    <!-- Patient Details Banner Card -->
+    <div class="patient-banner-card">
+        <div class="banner-avatar">
+            <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+        <div class="banner-details">
+            <div class="banner-title-row">
+                <h2>{{ patient.name }}</h2>
+                <span class="tag-badge"><i class="fa-solid fa-id-card"></i> {{ patient.patient_id }}</span>
+                <span class="tag-badge"><i class="fa-solid fa-user"></i> {{ patient.age }} Yrs</span>
+            </div>
+            <p class="banner-sub">
+                <i class="fa-solid fa-phone"></i> Emergency Contact: <strong>{{ patient.emergency_contact or 'Demo Contact' }}</strong>
+            </p>
+        </div>
+        <div class="banner-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+                <i class="fa-solid fa-chart-line"></i> Main Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Latest Vital Reading Spotlight Banner -->
+    {% if latest %}
+    <div class="latest-spotlight-bar">
+        <div class="spot-item">
+            <span class="spot-lbl">Latest Pulse</span>
+            <span class="spot-val text-red"><i class="fa-solid fa-heart-pulse"></i> {{ latest.heart_rate }} <small>BPM</small></span>
+        </div>
+        <div class="spot-item">
+            <span class="spot-lbl">Latest Oxygen</span>
+            <span class="spot-val text-blue"><i class="fa-solid fa-lungs"></i> {{ latest.spo2 }} <small>%</small></span>
+        </div>
+        <div class="spot-item">
+            <span class="spot-lbl">Latest Temp</span>
+            <span class="spot-val text-amber"><i class="fa-solid fa-temperature-half"></i> {{ "%.1f"|format(latest.temperature) }} <small>°C</small></span>
+        </div>
+        <div class="spot-item">
+            <span class="spot-lbl">Movement</span>
+            <span class="spot-val"><i class="fa-solid fa-person-walking"></i> {{ latest.movement_status }}</span>
+        </div>
+        <div class="spot-item">
+            <span class="spot-lbl">Last Logged</span>
+            <span class="spot-val text-muted"><i class="fa-regular fa-clock"></i> {{ latest.recorded_at }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Vital History Table Card -->
+    <div class="card history-table-card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Telemetry Logs for {{ patient.patient_id }}</h3>
+            <span class="badge badge-simulated"><i class="fa-solid fa-vial"></i> Simulated Data Log</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Heart Rate</th>
+                            <th>SpO2</th>
+                            <th>Temperature</th>
+                            <th>Movement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in history %}
+                        <tr>
+                            <td><i class="fa-regular fa-clock text-muted"></i> {{ record.recorded_at }}</td>
+                            <td><strong>{{ record.heart_rate }} BPM</strong></td>
+                            <td><strong>{{ record.spo2 }} %</strong></td>
+                            <td><strong>{{ "%.1f"|format(record.temperature) }} °C</strong></td>
+                            <td><span class="pill-sm">{{ record.movement_status }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No vital records logged for this patient yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+{% endblock %}

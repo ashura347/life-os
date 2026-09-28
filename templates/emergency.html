@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Event #{{ event.event_id }} — LIFE OS{% endblock %}
+
+{% block page_title %}Location-Aware Emergency Response (Event #{{ event.event_id }}){% endblock %}
+
+{% block content %}
+<div class="emergency-container">
+
+    <!-- Top Banner Alert & Safety Notice -->
+    <div class="emergency-banner-alert {% if event.alert and event.alert.severity == 'CRITICAL' %}banner-critical{% else %}banner-warning{% endif %}">
+        <div class="banner-icon">
+            <i class="fa-solid fa-truck-medical"></i>
+        </div>
+        <div class="banner-content">
+            <div class="banner-title-row">
+                <h2>EMERGENCY WORKFLOW EVENT #{{ event.event_id }}</h2>
+                <span class="badge status-badge status-{{ event.response_status | lower }}">
+                    <i class="fa-solid fa-circle-dot"></i> {{ event.response_status }}
+                </span>
+                {% if event.alert %}
+                <span class="badge severity-badge severity-{{ event.alert.severity | lower }}">
+                    {{ event.alert.severity }} ALERT
+                </span>
+                {% endif %}
+            </div>
+            <p class="banner-message">{{ event.alert.message if event.alert else 'Emergency alert triggered' }}</p>
+        </div>
+    </div>
+
+    <!-- Main Grid: Event Details & Location / Facilities -->
+    <div class="dashboard-grid">
+
+        <!-- Column 1: Patient Profile, Vitals & Location -->
+        <div class="grid-card event-info-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-user-injured"></i> Patient & Location Details</h3>
+                <span class="badge patient-id-badge">{{ event.patient_id }}</span>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">Patient Name:</span>
+                    <span class="info-val font-semibold">{{ event.patient.name if event.patient else 'Demo Patient' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Patient Age:</span>
+                    <span class="info-val">{{ event.patient.age if event.patient else 30 }} yrs</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Emergency Contact:</span>
+                    <span class="info-val text-primary font-semibold"><i class="fa-solid fa-phone"></i> {{ event.patient.emergency_contact if event.patient else 'Demo Contact' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Authorized Location:</span>
+                    <span class="info-val font-semibold text-danger"><i class="fa-solid fa-location-dot"></i> {{ event.location }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Coordinates:</span>
+                    <span class="info-val text-muted">{{ event.latitude }}, {{ event.longitude }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Triggered At:</span>
+                    <span class="info-val text-muted">{{ event.created_at }}</span>
+                </div>
+
+                <hr class="card-divider">
+
+                <h4 class="sub-header"><i class="fa-solid fa-heart-pulse"></i> Latest Telemetry Vitals</h4>
+                {% if event.vitals %}
+                <div class="vital-grid-small">
+                    <div class="vital-mini-box">
+                        <span class="mini-label">Heart Rate</span>
+                        <span class="mini-val {% if event.vitals.heart_rate > 100 %}val-abnormal{% endif %}">{{ event.vitals.heart_rate }} <small>BPM</small></span>
+                    </div>
+                    <div class="vital-mini-box">
+                        <span class="mini-label">SpO2</span>
+                        <span class="mini-val {% if event.vitals.spo2 < 95 %}val-abnormal{% endif %}">{{ event.vitals.spo2 }} <small>%</small></span>
+                    </div>
+                    <div class="vital-mini-box">
+                        <span class="mini-label">Temperature</span>
+                        <span class="mini-val {% if event.vitals.temperature > 37.8 %}val-abnormal{% endif %}">{{ event.vitals.temperature }} <small>°C</small></span>
+                    </div>
+                    <div class="vital-mini-box">
+                        <span class="mini-label">Movement</span>
+                        <span class="mini-val">{{ event.vitals.movement_status }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-muted">No telemetry records available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Column 2: Test Emergency Notification Audit Log -->
+        <div class="grid-card notification-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-paper-plane"></i> Test Emergency Notification Log</h3>
+                <span class="badge test-mode-badge"><i class="fa-solid fa-flask"></i> TEST MODE</span>
+            </div>
+            <div class="card-body">
+                <div class="notification-box">
+                    <div class="notif-header">
+                        <span class="notif-recipient"><i class="fa-solid fa-user-shield"></i> Recipient: <strong>{{ event.notification.recipient }}</strong></span>
+                        <span class="notif-status-tag">{{ event.notification.status }}</span>
+                    </div>
+                    <div class="notif-body-text">
+                        <i class="fa-solid fa-comment-medical"></i> "{{ event.notification.message }}"
+                    </div>
+                    <div class="notif-footer">
+                        <span class="notif-time"><i class="fa-regular fa-clock"></i> Logged at: {{ event.notification.timestamp }}</span>
+                    </div>
+                </div>
+
+                <div class="safety-disclaimer-box">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div>
+                        <strong>Safety Protocol:</strong> {{ event.notification.disclaimer }}
+                    </div>
+                </div>
+
+                <!-- Event Action Control Panel -->
+                <div class="action-control-panel">
+                    <h4><i class="fa-solid fa-sliders"></i> Emergency Response Controls</h4>
+                    <div class="btn-group-stacked">
+                        {% if event.response_status != 'ACKNOWLEDGED' and event.response_status != 'RESOLVED' %}
+                        <button class="btn btn-warning btn-block" onclick="acknowledgeEmergencyEvent({{ event.event_id }})">
+                            <i class="fa-solid fa-check-double"></i> Acknowledge Emergency Event
+                        </button>
+                        {% endif %}
+
+                        {% if event.response_status != 'RESOLVED' %}
+                        <button class="btn btn-success btn-block" onclick="resolveEmergencyEvent({{ event.event_id }})">
+                            <i class="fa-solid fa-circle-check"></i> Resolve Emergency Event
+                        </button>
+                        {% endif %}
+
+                        <button class="btn btn-test-emergency btn-block" onclick="runTestEmergencyWorkflow({{ event.event_id }})">
+                            <i class="fa-solid fa-vial-circle-check"></i> TEST EMERGENCY WORKFLOW
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Full-Width Section: Nearby Healthcare Facilities -->
+    <div class="grid-card facilities-section-card">
+        <div class="card-header">
+            <div>
+                <h3><i class="fa-solid fa-hospital"></i> Nearby Healthcare Facilities</h3>
+                <p class="section-subtitle">Discovered facilities near <strong>{{ event.location }}</strong> (Source: {{ event.facilities_source }})</p>
+            </div>
+            <span class="badge facility-count-badge">{{ event.facilities | length }} Facilities Found</span>
+        </div>
+        <div class="card-body">
+
+            <div class="facility-notice-bar">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>{{ event.disclaimer }}</span>
+            </div>
+
+            <div class="facility-grid">
+                {% for facility in event.facilities %}
+                <div class="facility-card {% if event.selected_facility == facility.name %}facility-selected{% endif %}">
+                    <div class="facility-card-header">
+                        <div>
+                            <h4 class="facility-name">{{ facility.name }}</h4>
+                            <span class="facility-address"><i class="fa-solid fa-location-dot"></i> {{ facility.address }}</span>
+                        </div>
+                        <span class="facility-distance-badge"><i class="fa-solid fa-route"></i> {{ facility.distance }}</span>
+                    </div>
+
+                    <div class="facility-card-body">
+                        <div class="facility-contact-row">
+                            <span class="contact-label"><i class="fa-solid fa-phone"></i> Contact:</span>
+                            <span class="contact-val">{{ facility.contact_number }}</span>
+                        </div>
+
+                        <div class="facility-services-row">
+                            <span class="services-label"><i class="fa-solid fa-stethoscope"></i> Services:</span>
+                            <div class="services-pills">
+                                {% for svc in facility.services %}
+                                <span class="service-pill">{{ svc }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="facility-meta-row">
+                            <span class="source-tag"><i class="fa-solid fa-database"></i> {{ facility.source }}</span>
+                        </div>
+                    </div>
+
+                    <div class="facility-card-footer">
+                        <button class="btn btn-outline-primary btn-sm btn-block" onclick="resolveEmergencyEventWithFacility({{ event.event_id }}, '{{ facility.name }}')">
+                            <i class="fa-solid fa-truck-medical"></i> Select & Resolve Event
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function acknowledgeEmergencyEvent(eventId) {
+    fetch('/api/emergency-events/' + eventId + '/acknowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Emergency Event #' + eventId + ' acknowledged successfully.');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => alert('Failed to acknowledge event: ' + err));
+}
+
+function resolveEmergencyEvent(eventId) {
+    fetch('/api/emergency-events/' + eventId + '/resolve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Emergency Event #' + eventId + ' marked as RESOLVED.');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => alert('Failed to resolve event: ' + err));
+}
+
+function resolveEmergencyEventWithFacility(eventId, facilityName) {
+    if (confirm('Select "' + facilityName + '" for Emergency Event #' + eventId + ' and resolve?')) {
+        fetch('/api/emergency-events/' + eventId + '/resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selected_facility: facilityName })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Facility "' + facilityName + '" assigned & Emergency Event #' + eventId + ' resolved.');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => alert('Failed to resolve event: ' + err));
+    }
+}
+
+function runTestEmergencyWorkflow(eventId) {
+    fetch('/api/emergency-events/' + eventId + '/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('TEST EMERGENCY WORKFLOW completed for Event #' + eventId + '.\nStatus set to TEST_COMPLETED. Zero real dispatches were initiated.');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => alert('Failed to run test emergency workflow: ' + err));
+}
+</script>
+{% endblock %}

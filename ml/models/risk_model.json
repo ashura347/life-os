@@ -1,0 +1,186 @@
+{
+  "model_version": "prototype-v1",
+  "algorithm": "PurePythonDecisionTree",
+  "metrics": {
+    "accuracy": 0.9633333333333334,
+    "precision": 0.9692470837751855,
+    "recall": 0.9641102010424424,
+    "f1_score": 0.9665496593020855
+  },
+  "tree_root": {
+    "feature_idx": 0,
+    "threshold": 83.65,
+    "left": {
+      "feature_idx": 2,
+      "threshold": 37.25,
+      "left": {
+        "feature_idx": 1,
+        "threshold": 95.45,
+        "left": {
+          "feature_idx": 1,
+          "threshold": 92.05,
+          "left": {
+            "value": 2,
+            "probabilities": [
+              0.0,
+              0.0,
+              1.0
+            ]
+          },
+          "right": {
+            "value": 1,
+            "probabilities": [
+              0.0,
+              1.0,
+              0.0
+            ]
+          }
+        },
+        "right": {
+          "value": 0,
+          "probabilities": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "right": {
+        "feature_idx": 1,
+        "threshold": 92.05,
+        "left": {
+          "value": 2,
+          "probabilities": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "right": {
+          "feature_idx": 1,
+          "threshold": 99.25,
+          "left": {
+            "feature_idx": 0,
+            "threshold": 69.45,
+            "left": {
+              "value": 0,
+              "probabilities": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            },
+            "right": {
+              "feature_idx": 2,
+              "threshold": 37.349999999999994,
+              "left": {
+                "value": 1,
+                "probabilities": [
+                  0.16666666666666666,
+                  0.8333333333333334,
+                  0.0
+                ]
+              },
+              "right": {
+                "value": 1,
+                "probabilities": [
+                  0.0,
+                  1.0,
+                  0.0
+                ]
+              }
+            }
+          },
+          "right": {
+            "value": 0,
+            "probabilities": [
+              1.0,
+              0.0,
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    "right": {
+      "feature_idx": 0,
+      "threshold": 111.94999999999999,
+      "left": {
+        "feature_idx": 1,
+        "threshold": 92.55,
+        "left": {
+          "value": 2,
+          "probabilities": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        "right": {
+          "feature_idx": 2,
+          "threshold": 38.3,
+          "left": {
+            "feature_idx": 0,
+            "threshold": 89.55,
+            "left": {
+              "feature_idx": 2,
+              "threshold": 37.150000000000006,
+              "left": {
+                "value": 0,
+                "probabilities": [
+                  0.6326530612244898,
+                  0.3673469387755102,
+                  0.0
+                ]
+              },
+              "right": {
+                "value": 1,
+                "probabilities": [
+                  0.05263157894736842,
+                  0.9473684210526315,
+                  0.0
+                ]
+              }
+            },
+            "right": {
+              "feature_idx": 1,
+              "threshold": 98.6,
+              "left": {
+                "value": 1,
+                "probabilities": [
+                  0.014150943396226415,
+                  0.9858490566037735,
+                  0.0
+                ]
+              },
+              "right": {
+                "value": 0,
+                "probabilities": [
+                  0.5714285714285714,
+                  0.42857142857142855,
+                  0.0
+                ]
+              }
+            }
+          },
+          "right": {
+            "value": 2,
+            "probabilities": [
+              0.0,
+              0.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "right": {
+        "value": 2,
+        "probabilities": [
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    }
+  }
+}

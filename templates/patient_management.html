@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}LIFE OS — Patient Management{% endblock %}
+{% block page_title %}Patient Management Interface{% endblock %}
+
+{% block content %}
+<div class="management-container">
+
+    <!-- Header Alert Banner -->
+    <div class="sim-alert-banner">
+        <i class="fa-solid fa-flask-vial"></i>
+        <span><strong>Demonstration/Test Interface:</strong> Use this page to register test patients for system validation. Sensitive real-world medical data must not be stored.</span>
+    </div>
+
+    {% if error %}
+    <div class="error-alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <div class="management-grid">
+
+        <!-- Add Patient Form Card -->
+        <div class="card form-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-user-plus"></i> Register Test Patient</h3>
+                <span class="badge-sm badge-sim">Test Form</span>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('patient_bp.add_patient_form') }}" method="POST" class="patient-form">
+                    
+                    <div class="form-group">
+                        <label for="patient_id">Patient ID <span class="req">*</span></label>
+                        <input type="text" id="patient_id" name="patient_id" placeholder="e.g. P001" required class="form-input">
+                        <small class="form-hint">Unique identifier for IoT telemetry matching.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="req">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="e.g. Demo Patient" required class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age (Years) <span class="req">*</span></label>
+                        <input type="number" id="age" name="age" placeholder="e.g. 30" min="1" max="120" required class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emergency_contact">Emergency Contact Placeholder</label>
+                        <input type="text" id="emergency_contact" name="emergency_contact" placeholder="e.g. Demo Contact / +1 (555) 0199" class="form-input">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk"></i> Register Patient
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- Registered Patients Table Card -->
+        <div class="card list-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-users"></i> Registered Test Patients</h3>
+                <span class="count-badge">{{ patients|length }} Patient(s)</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Emergency Contact</th>
+                                <th>Registered At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in patients %}
+                            <tr>
+                                <td><strong class="text-blue">{{ p.patient_id }}</strong></td>
+                                <td>{{ p.name }}</td>
+                                <td>{{ p.age }} yrs</td>
+                                <td>{{ p.emergency_contact or 'N/A' }}</td>
+                                <td><span class="text-muted">{{ p.created_at }}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('vital_bp.view_vital_history', patient_id=p.patient_id) }}" class="btn-sm btn-outline" title="View Vital History">
+                                            <i class="fa-solid fa-heart-pulse"></i> History
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No patients found. Create a test patient using the form.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

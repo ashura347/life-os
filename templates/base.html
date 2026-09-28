@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LIFE OS — Patient Monitoring & Emergency Response System{% endblock %}</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>LIFE OS</h2>
+                    <span class="brand-subtitle">Emergency Workflow v6.0</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.path == '/dashboard' or request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('emergency_bp.emergency_history_page', patient_id='P001') }}" class="nav-item {% if '/emergency' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-truck-medical"></i>
+                    <span>Emergency Response</span>
+                </a>
+                <a href="{{ url_for('alert_bp.view_alert_history', patient_id='P001') }}" class="nav-item {% if '/alerts' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Alert History (P001)</span>
+                </a>
+                <a href="{{ url_for('vital_bp.view_vital_history', patient_id='P001') }}" class="nav-item {% if '/vitals' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Vital History (P001)</span>
+                </a>
+                <a href="{{ url_for('demo_bp.demo_page') }}" class="nav-item {% if '/demo' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-flask"></i>
+                    <span>Demo Control Room</span>
+                </a>
+                <a href="{{ url_for('patient_bp.list_patients') }}" class="nav-item {% if request.path == '/patients' %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Patient Management</span>
+                </a>
+                <a href="{{ url_for('patient') }}" class="nav-item {% if request.path == '/patient' %}active{% endif %}">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <span>Patient Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status-widget">
+                    <span class="status-dot pulsing green"></span>
+                    <div class="status-info">
+                        <span class="status-label">Emergency Workflow</span>
+                        <span class="status-val" id="nav-device-status">Active (Location & Facilities)</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-wrapper">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-nav-toggle" id="mobile-toggle" aria-label="Toggle Navigation">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="sim-badge" title="Notice: All readings and emergency response triggers are simulated test data">
+                        <i class="fa-solid fa-flask-vial"></i>
+                        <span>Simulated Environment</span>
+                    </div>
+                    <div class="user-profile-badge">
+                        <div class="avatar"><i class="fa-solid fa-user-nurse"></i></div>
+                        <span class="user-name">Station Alpha</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Banner Alert for Simulation Notice -->
+            <div class="disclaimer-banner">
+                <i class="fa-solid fa-circle-info"></i>
+                <span><strong>Notice:</strong> LIFE OS is a <strong>student prototype</strong>. Emergency response events, nearby healthcare facilities, and notifications operate strictly in <strong>TEST mode</strong> without contacting real emergency services or clinical providers.</span>
+            </div>
+
+            <!-- Page Content -->
+            <main class="content-container">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- App Footer -->
+            <footer class="app-footer">
+                <p>&copy; 2026 <strong>LIFE OS</strong> — Patient Monitoring & Emergency Response System (Part 6 Location-Aware Emergency Response).</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

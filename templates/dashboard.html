@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}LIFE OS — Patient Dashboard{% endblock %}
+{% block page_title %}Patient Monitoring Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- Patient Header Summary Card -->
+    <section class="patient-summary-card">
+        <div class="patient-primary-info">
+            <div class="patient-avatar-large">
+                <i class="fa-solid fa-bed-pulse"></i>
+            </div>
+            <div class="patient-details">
+                <div class="patient-title-row">
+                    <h2 id="patient-name">{{ patient.name }}</h2>
+                    <!-- Primary Deterministic Rule-Based System Status (Part 4) -->
+                    <span class="badge status-badge status-{{ patient_status|lower }}" id="patient-status-badge">
+                        RULE ENGINE STATUS: {{ patient_status }}
+                    </span>
+                </div>
+                <div class="patient-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Patient ID:</span>
+                        <strong class="meta-val" id="patient-id">{{ patient.patient_id }}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Age:</span>
+                        <strong class="meta-val" id="patient-age">{{ patient.age }} yrs</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Emergency Contact:</span>
+                        <strong class="meta-val">{{ patient.emergency_contact or 'Demo Contact' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="patient-secondary-info">
+            <!-- Active Alerts Counter Widget -->
+            <div class="device-status-box">
+                <span class="box-label">Active Alerts</span>
+                <a href="{{ url_for('alert_bp.view_alert_history', patient_id=patient.patient_id) }}" class="status-indicator-pill {% if active_alerts %}red{% else %}green{% endif %}" id="alerts-count-pill">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="active-alerts-num">{{ active_alerts|length }} Active Alert(s)</span>
+                </a>
+                <span class="sub-timestamp">Rule Engine Filtered</span>
+            </div>
+
+            <!-- Device Connection Status & Source Widget (Part 8) -->
+            <div class="device-status-box">
+                <span class="box-label">Device (<span id="lbl-device-id">{{ device.device_id if device else 'LIFEOS-001' }}</span>)</span>
+                <div class="status-indicator-pill {% if device and device.connection_status == 'CONNECTED' %}green{% elif device and device.connection_status == 'ERROR' %}amber{% else %}red{% endif %}" id="device-status-pill">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span id="device-status-text">{{ device.connection_status if device else 'OFFLINE' }}</span>
+                </div>
+                <span class="sub-timestamp">Source: <strong id="device-source-text">{{ device.data_source if device else 'SIMULATED' }}</strong></span>
+            </div>
+
+            <div class="timestamp-box">
+                <span class="box-label">Last Vital Reading</span>
+                <div class="timestamp-val">
+                    <i class="fa-regular fa-clock"></i>
+                    <span id="last-updated-time">{{ vitals.recorded_at if vitals else 'N/A' }}</span>
+                </div>
+                <span class="sub-timestamp" style="display:block; margin-top:0.2rem; color:#d97706; font-weight:600;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Prototype sensor data — not medical-grade.
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI/ML Advisory Prototype Assessment Card (Part 5 Addition) -->
+    <div class="ml-assessment-card">
+        <div class="ml-card-header">
+            <div class="ml-header-title">
+                <i class="fa-solid fa-brain text-blue"></i>
+                <h3>AI/ML Prototype Risk Assessment</h3>
+                <span class="badge-sm badge-sim">Advisory Model</span>
+            </div>
+            <div class="ml-header-status">
+                <span class="status-dot green"></span>
+                <span class="ml-status-lbl">Model: <strong id="ml-version">{{ ml.model_version if ml else 'prototype-v1' }}</strong></span>
+            </div>
+        </div>
+        <div class="ml-card-body">
+            <div class="ml-metric-item">
+                <span class="ml-metric-lbl">Risk Category</span>
+                <span class="badge ml-risk-badge ml-risk-{{ (ml.risk_category|lower) if ml else 'low_risk' }}" id="ml-risk-category">
+                    <i class="fa-solid fa-chart-pie"></i> {{ ml.risk_category if ml else 'LOW_RISK' }}
+                </span>
+            </div>
+            <div class="ml-metric-item">
+                <span class="ml-metric-lbl">Model Confidence</span>
+                <div class="ml-confidence-box">
+                    <span class="ml-conf-num" id="ml-confidence">{{ "%.0f"|format(ml.confidence * 100) if ml and ml.confidence else '95' }}%</span>
+                    <div class="ml-conf-bar">
+                        <div class="ml-conf-fill" id="ml-conf-fill" style="width: {{ "%.0f"|format(ml.confidence * 100) if ml and ml.confidence else '95' }}%;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ml-metric-item">
+                <span class="ml-metric-lbl">Model Availability</span>
+                <span class="ml-val-text text-green" id="ml-available">
+                    <i class="fa-solid fa-circle-check"></i> {{ 'ONLINE' if ml and ml.available else 'OFFLINE' }}
+                </span>
+            </div>
+            <div class="ml-metric-item">
+                <span class="ml-metric-lbl">Last Analysis Time</span>
+                <span class="ml-val-text text-muted" id="ml-analysis-time">
+                    <i class="fa-regular fa-clock"></i> {{ vitals.recorded_at if vitals else 'N/A' }}
+                </span>
+            </div>
+        </div>
+        <div class="ml-card-footer">
+            <i class="fa-solid fa-circle-info"></i>
+            <span><strong>Notice:</strong> This is an <strong>experimental decision-support output</strong> and is not a clinical medical diagnosis.</span>
+        </div>
+    </div>
+
+    <!-- System Integration & Health Diagnostics Panel (Part 7 Addition) -->
+    <div class="health-diagnostics-card mb-4 grid-card">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-server"></i> System Integration & Health Diagnostics</h3>
+            <a href="{{ url_for('demo_bp.demo_page') }}" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-flask"></i> Open Demo Room
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="health-status-grid">
+                <div class="health-item-box">
+                    <span class="health-lbl"><i class="fa-solid fa-database"></i> Database:</span>
+                    <span class="badge-sm pill-sm text-green">{{ health.database if health else 'connected' }}</span>
+                </div>
+                <div class="health-item-box">
+                    <span class="health-lbl"><i class="fa-solid fa-wifi"></i> Device Service:</span>
+                    <span class="badge-sm pill-sm {% if health and health.device_service == 'connected' %}text-green{% else %}text-amber{% endif %}">
+                        {{ health.device_service if health else 'connected' }}
+                    </span>
+                </div>
+                <div class="health-item-box">
+                    <span class="health-lbl"><i class="fa-solid fa-shield-halved"></i> Alert Engine:</span>
+                    <span class="badge-sm pill-sm text-green">{{ health.alert_engine if health else 'ready' }}</span>
+                </div>
+                <div class="health-item-box">
+                    <span class="health-lbl"><i class="fa-solid fa-brain"></i> ML Model:</span>
+                    <span class="badge-sm pill-sm text-blue">{{ health.ml_model if health else 'available' }}</span>
+                </div>
+                <div class="health-item-box">
+                    <span class="health-lbl"><i class="fa-solid fa-hospital"></i> Hospital Service:</span>
+                    <span class="badge-sm pill-sm text-amber">{{ health.hospital_service if health else 'test_mode' }}</span>
+                </div>
+                <div class="health-item-box">
+                    <span class="health-lbl"><i class="fa-solid fa-paper-plane"></i> Notification Mode:</span>
+                    <span class="badge-sm pill-sm text-purple">{{ health.notification_mode if health else 'TEST' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Emergency Event Spotlight Banner (Part 6 Addition) -->
+    {% if latest_event %}
+    <div class="emergency-spotlight-banner status-{{ latest_event.response_status|lower }}">
+        <div class="emergency-spotlight-icon">
+            <i class="fa-solid fa-truck-medical"></i>
+        </div>
+        <div class="emergency-spotlight-content">
+            <div class="emergency-spotlight-title">
+                <strong>LOCATION-AWARE EMERGENCY EVENT #{{ latest_event.event_id }}:</strong>
+                <span class="badge status-badge status-{{ latest_event.response_status|lower }}">{{ latest_event.response_status }}</span>
+                <span class="emergency-spotlight-location"><i class="fa-solid fa-location-dot"></i> {{ latest_event.location }}</span>
+            </div>
+            <p class="emergency-spotlight-msg">Alert: {{ latest_event.alert.message if latest_event.alert else 'Emergency alert triggered' }} | Facilities Discovered: {{ latest_event.facilities | length }}</p>
+        </div>
+        <div class="emergency-spotlight-action">
+            <a href="{{ url_for('emergency_bp.emergency_page', event_id=latest_event.event_id) }}" class="btn btn-sm btn-danger">
+                <i class="fa-solid fa-hospital-user"></i> Open Emergency Hub
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Active Alert Spotlight Banner -->
+    {% if latest_alert %}
+    <div class="alert-spotlight-banner severity-{{ latest_alert.severity|lower }}">
+        <div class="alert-spotlight-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="alert-spotlight-content">
+            <div class="alert-spotlight-title">
+                <strong>{{ latest_alert.severity }} ALERT:</strong> {{ latest_alert.alert_type }}
+                <span class="alert-spotlight-time"><i class="fa-regular fa-clock"></i> {{ latest_alert.triggered_at }}</span>
+            </div>
+            <p class="alert-spotlight-msg">{{ latest_alert.message }}</p>
+        </div>
+        <div class="alert-spotlight-action">
+            <button onclick="triggerEmergencyWorkflow({{ latest_alert.id }})" class="btn btn-sm btn-danger">
+                <i class="fa-solid fa-truck-medical"></i> Initiate Emergency (TEST)
+            </button>
+            <a href="{{ url_for('alert_bp.view_alert_history', patient_id=patient.patient_id) }}" class="btn btn-sm btn-outline">
+                Manage Alerts
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Controls Bar -->
+    <div class="dashboard-controls-bar">
+        <div class="controls-left">
+            <h3><i class="fa-solid fa-wave-square"></i> Real-Time Telemetry, Rules, ML & Emergency Stream</h3>
+            <span class="subtext">IoT Stream for {{ patient.patient_id }} ({{ patient.name }}) — Location: {{ patient.location or 'Pune, Maharashtra' }}</span>
+        </div>
+        <div class="controls-right">
+            <a href="{{ url_for('emergency_bp.emergency_history_page', patient_id=patient.patient_id) }}" class="btn btn-outline">
+                <i class="fa-solid fa-truck-medical"></i> Emergency Logs
+            </a>
+            <a href="{{ url_for('alert_bp.view_alert_history', patient_id=patient.patient_id) }}" class="btn btn-outline">
+                <i class="fa-solid fa-bell"></i> Alert History
+            </a>
+            <a href="{{ url_for('vital_bp.view_vital_history', patient_id=patient.patient_id) }}" class="btn btn-outline">
+                <i class="fa-solid fa-list-check"></i> Vitals Log
+            </a>
+            <button class="btn btn-primary" id="btn-simulate-pulse">
+                <i class="fa-solid fa-rotate"></i> Manual Sensor Read
+            </button>
+            <button class="btn btn-outline" id="btn-auto-toggle">
+                <i class="fa-solid fa-play"></i> Auto Poll: <span id="auto-status">ON</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Vitals Cards Grid -->
+    <div class="vitals-grid">
+        
+        <!-- Heart Rate Card -->
+        <div class="vital-card card-heart-rate">
+            <div class="vital-card-header">
+                <div class="vital-icon hr-icon">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <span class="vital-title">Heart Rate</span>
+                <span class="vital-tag">Pulse</span>
+            </div>
+            <div class="vital-card-body">
+                <div class="vital-value-group">
+                    <span class="vital-number" id="val-heart-rate">{{ vitals.heart_rate if vitals else 82 }}</span>
+                    <span class="vital-unit">BPM</span>
+                </div>
+                <div class="vital-sparkline-placeholder">
+                    <div class="heart-pulse-line"></div>
+                </div>
+            </div>
+            <div class="vital-card-footer">
+                <span class="vital-range"><i class="fa-solid fa-circle-check"></i> Normal: 60 - 100 BPM</span>
+            </div>
+        </div>
+
+        <!-- SpO2 Blood Oxygen Card -->
+        <div class="vital-card card-spo2">
+            <div class="vital-card-header">
+                <div class="vital-icon spo2-icon">
+                    <i class="fa-solid fa-lungs"></i>
+                </div>
+                <span class="vital-title">SpO2 Level</span>
+                <span class="vital-tag">Oxygen</span>
+            </div>
+            <div class="vital-card-body">
+                <div class="vital-value-group">
+                    <span class="vital-number" id="val-spo2">{{ vitals.spo2 if vitals else 98 }}</span>
+                    <span class="vital-unit">%</span>
+                </div>
+                <div class="vital-progress-bar">
+                    <div class="progress-fill" id="spo2-progress" style="width: {{ vitals.spo2 if vitals else 98 }}%;"></div>
+                </div>
+            </div>
+            <div class="vital-card-footer">
+                <span class="vital-range"><i class="fa-solid fa-circle-check"></i> Normal: 95% - 100%</span>
+            </div>
+        </div>
+
+        <!-- Temperature Card -->
+        <div class="vital-card card-temperature">
+            <div class="vital-card-header">
+                <div class="vital-icon temp-icon">
+                    <i class="fa-solid fa-temperature-half"></i>
+                </div>
+                <span class="vital-title">Body Temp</span>
+                <span class="vital-tag">Thermal</span>
+            </div>
+            <div class="vital-card-body">
+                <div class="vital-value-group">
+                    <span class="vital-number" id="val-temperature">{{ "%.1f"|format(vitals.temperature) if vitals else '36.8' }}</span>
+                    <span class="vital-unit">°C</span>
+                </div>
+                <div class="temp-gauge-visual">
+                    <div class="temp-indicator-pin" style="left: {{ (((vitals.temperature if vitals else 36.8) - 35) / 5 * 100)|round }}%;"></div>
+                </div>
+            </div>
+            <div class="vital-card-footer">
+                <span class="vital-range"><i class="fa-solid fa-circle-check"></i> Normal: 36.5°C - 37.5°C</span>
+            </div>
+        </div>
+
+        <!-- Movement Card -->
+        <div class="vital-card card-movement">
+            <div class="vital-card-header">
+                <div class="vital-icon movement-icon">
+                    <i class="fa-solid fa-person-walking"></i>
+                </div>
+                <span class="vital-title">Movement</span>
+                <span class="vital-tag">Activity</span>
+            </div>
+            <div class="vital-card-body">
+                <div class="vital-value-group">
+                    <span class="vital-text" id="val-movement">{{ vitals.movement_status if vitals else 'Normal' }}</span>
+                </div>
+                <div class="movement-state-visual">
+                    <span class="movement-badge-pill" id="movement-badge">
+                        <i class="fa-solid fa-person-resting"></i> Sensor Tracked
+                    </span>
+                </div>
+            </div>
+            <div class="vital-card-footer">
+                <span class="vital-range"><i class="fa-solid fa-signal"></i> Telemetry Active</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Additional Info Panels -->
+    <div class="info-panels-grid">
+        <div class="panel-card">
+            <h3><i class="fa-solid fa-brain text-blue"></i> AI/ML Decision-Support Architecture</h3>
+            <ul class="system-checklist">
+                <li><i class="fa-solid fa-check text-green"></i> Pure Python Decision Tree Inference Model Active</li>
+                <li><i class="fa-solid fa-check text-green"></i> REST API Inference Endpoint (`POST /api/ml/predict`) Active</li>
+                <li><i class="fa-solid fa-check text-green"></i> Primary Deterministic Rule-Engine Preserved</li>
+                <li><i class="fa-solid fa-check text-green"></i> Safe Model Fallback & Error Handling Configured</li>
+            </ul>
+        </div>
+        <div class="panel-card">
+            <h3><i class="fa-solid fa-triangle-exclamation text-amber"></i> Prototype Decision-Support Disclaimer</h3>
+            <p class="panel-text">
+                AI/ML predictions are advisory outputs designed to demonstrate machine learning integration. They do not override the rule-based alert engine or trigger automated hospital dispatches.
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

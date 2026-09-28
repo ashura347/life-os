@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}LIFE OS — Patient Profile{% endblock %}
+{% block page_title %}Patient Profile & Records{% endblock %}
+
+{% block content %}
+<div class="patient-page-container">
+
+    <!-- Patient Header Card -->
+    <div class="patient-profile-card">
+        <div class="profile-header-top">
+            <div class="profile-avatar">
+                <i class="fa-solid fa-user-injured"></i>
+            </div>
+            <div class="profile-main-meta">
+                <h2>{{ patient.name }}</h2>
+                <div class="profile-sub-tags">
+                    <span class="tag-badge"><i class="fa-solid fa-id-card"></i> {{ patient.patient_id }}</span>
+                    <span class="tag-badge"><i class="fa-solid fa-cake-candles"></i> {{ patient.age }} Years Old</span>
+                    <span class="tag-badge status-{{ patient.patient_status|lower }}"><i class="fa-solid fa-heart-pulse"></i> {{ patient.patient_status }}</span>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <hr class="card-divider">
+
+        <!-- Patient Detailed Meta Grid -->
+        <div class="profile-details-grid">
+            <div class="detail-box">
+                <span class="detail-label"><i class="fa-solid fa-shield-halved"></i> Monitoring Status</span>
+                <span class="detail-value text-green"><i class="fa-solid fa-circle-play"></i> {{ patient.monitoring_status }}</span>
+            </div>
+            <div class="detail-box">
+                <span class="detail-label"><i class="fa-solid fa-phone-volume"></i> Emergency Contact (Placeholder)</span>
+                <span class="detail-value">{{ patient.emergency_contact_name }} ({{ patient.emergency_contact_relation }})</span>
+                <span class="detail-sub">{{ patient.emergency_contact_phone }}</span>
+            </div>
+            <div class="detail-box">
+                <span class="detail-label"><i class="fa-solid fa-wifi"></i> Telemetry Link</span>
+                <span class="detail-value text-blue"><i class="fa-solid fa-satellite-dish"></i> {{ vitals.device_status }}</span>
+            </div>
+            <div class="detail-box">
+                <span class="detail-label"><i class="fa-solid fa-clock-rotate-left"></i> Last Telemetry Pulse</span>
+                <span class="detail-value">{{ vitals.recorded_at }}</span>
+            </div>
+        </div>
+
+        <div class="privacy-note">
+            <i class="fa-solid fa-user-shield"></i>
+            <span><strong>Privacy Notice:</strong> LIFE OS conforms to privacy-first telemetry architecture. Only essential vital readings are logged; no unneeded personally sensitive medical records are collected.</span>
+        </div>
+    </div>
+
+    <!-- Latest Vital Reading Spotlight Card -->
+    <div class="spotlight-section">
+        <h3><i class="fa-solid fa-heart-circle-check"></i> Latest Vital Readings Summary</h3>
+        <div class="spotlight-grid">
+            <div class="spotlight-card">
+                <div class="spot-icon hr"><i class="fa-solid fa-heart-pulse"></i></div>
+                <div class="spot-data">
+                    <span class="spot-val">{{ vitals.heart_rate }} <small>BPM</small></span>
+                    <span class="spot-name">Heart Rate</span>
+                </div>
+            </div>
+            <div class="spotlight-card">
+                <div class="spot-icon spo2"><i class="fa-solid fa-lungs"></i></div>
+                <div class="spot-data">
+                    <span class="spot-val">{{ vitals.spo2 }} <small>%</small></span>
+                    <span class="spot-name">SpO2 Oxygen</span>
+                </div>
+            </div>
+            <div class="spotlight-card">
+                <div class="spot-icon temp"><i class="fa-solid fa-temperature-half"></i></div>
+                <div class="spot-data">
+                    <span class="spot-val">{{ "%.1f"|format(vitals.temperature) }} <small>°C</small></span>
+                    <span class="spot-name">Body Temp</span>
+                </div>
+            </div>
+            <div class="spotlight-card">
+                <div class="spot-icon movement"><i class="fa-solid fa-person-walking"></i></div>
+                <div class="spot-data">
+                    <span class="spot-val">{{ vitals.movement }}</span>
+                    <span class="spot-name">Activity Level</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telemetry Log History Table -->
+    <div class="table-section-card">
+        <div class="table-header">
+            <h3><i class="fa-solid fa-list-check"></i> Telemetry Reading History Log</h3>
+            <span class="badge badge-simulated"><i class="fa-solid fa-vial"></i> Simulated Data Log</span>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Recorded Time</th>
+                        <th>Heart Rate</th>
+                        <th>SpO2</th>
+                        <th>Temp (°C)</th>
+                        <th>Movement</th>
+                        <th>Patient Status</th>
+                        <th>Device State</th>
+                        <th>Data Mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in history %}
+                    <tr>
+                        <td><i class="fa-regular fa-clock text-muted"></i> {{ log.recorded_at }}</td>
+                        <td><strong>{{ log.heart_rate }} BPM</strong></td>
+                        <td><strong>{{ log.spo2 }}%</strong></td>
+                        <td><strong>{{ "%.1f"|format(log.temperature) }}°C</strong></td>
+                        <td><span class="pill-sm">{{ log.movement }}</span></td>
+                        <td>
+                            <span class="badge status-badge status-{{ log.patient_status|lower }}">
+                                {{ log.patient_status }}
+                            </span>
+                        </td>
+                        <td><span class="text-green"><i class="fa-solid fa-check"></i> {{ log.device_status }}</span></td>
+                        <td><span class="badge-sm badge-sim">Simulated</span></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">No vital records found in database.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Events History — LIFE OS{% endblock %}
+
+{% block page_title %}Emergency Events Log (Patient {{ patient.patient_id }}){% endblock %}
+
+{% block content %}
+<div class="emergency-history-container">
+    <div class="section-header-row">
+        <div>
+            <h2><i class="fa-solid fa-truck-medical"></i> Emergency Response Log</h2>
+            <p class="section-subtitle">Location-aware emergency event history for <strong>{{ patient.name }}</strong> (ID: {{ patient.patient_id }})</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if events %}
+    <div class="table-responsive grid-card">
+        <table class="table emergency-table">
+            <thead>
+                <tr>
+                    <th>Event ID</th>
+                    <th>Alert ID</th>
+                    <th>Severity</th>
+                    <th>Alert Message</th>
+                    <th>Authorized Location</th>
+                    <th>Response Status</th>
+                    <th>Triggered At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evt in events %}
+                <tr>
+                    <td><strong>#{{ evt.event_id }}</strong></td>
+                    <td>Alert #{{ evt.alert_id }}</td>
+                    <td>
+                        {% if evt.alert %}
+                        <span class="badge severity-badge severity-{{ evt.alert.severity | lower }}">{{ evt.alert.severity }}</span>
+                        {% else %}
+                        <span class="badge severity-badge">WARNING</span>
+                        {% endif %}
+                    </td>
+                    <td class="event-msg-cell">{{ evt.alert.message if evt.alert else 'Emergency alert' }}</td>
+                    <td><i class="fa-solid fa-location-dot text-danger"></i> {{ evt.location }}</td>
+                    <td>
+                        <span class="badge status-badge status-{{ evt.response_status | lower }}">
+                            {{ evt.response_status }}
+                        </span>
+                    </td>
+                    <td>{{ evt.created_at }}</td>
+                    <td>
+                        <a href="{{ url_for('emergency_bp.emergency_page', event_id=evt.event_id) }}" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-eye"></i> View Event
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="grid-card empty-state-card">
+        <div class="empty-icon"><i class="fa-solid fa-truck-medical-slash"></i></div>
+        <h3>No Emergency Events Recorded</h3>
+        <p class="text-muted">No emergency response events have been initiated for patient {{ patient.patient_id }}. Emergency events are generated when critical/warning alerts trigger an emergency workflow.</p>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary mt-3">Go to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
